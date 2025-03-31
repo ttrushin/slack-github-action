@@ -126,10 +126,10 @@ export default class Content {
         const load = yaml.load(content, {
           schema: yaml.JSON_SCHEMA,
         });
-        return /** @type {Content} */ (load);
+        return /** @type {Content} */ (decodeNewlines(load));
       }
       if (config.inputs.payloadFilePath.endsWith("json")) {
-        return JSON.parse(content);
+        return decodeNewlines(JSON.parse(content));
       }
       throw new SlackError(
         config.core,
@@ -163,4 +163,26 @@ export default class Content {
     };
     return markup.up(template, context);
   }
+}
+
+// Helper function to deeply iterate through the object
+function decodeNewlines(obj) {
+  if (typeof obj === 'object' && obj !== null) {
+    if (Array.isArray(obj)) {
+      return obj.map(decodeNewlines);
+    } else {
+      return Object.fromEntries(
+        Object.entries(obj).map(([key, value]) => {
+          if (typeof value === 'string') {
+            return [key, value.replace('\\n', '\n')];
+          } else if (typeof value === 'object') {
+            return [key, decodeNewlines(value)];
+          } else {
+            return [key, value];
+          }
+        })
+      );
+    }
+  }
+  return obj;
 }
