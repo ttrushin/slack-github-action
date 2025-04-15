@@ -174,7 +174,7 @@ function decodeNewlines(obj) {
       return Object.fromEntries(
         Object.entries(obj).map(([key, value]) => {
           if (typeof value === 'string') {
-            return [key, value.replace('\\n', '\n')];
+            return [key, value.replace(/\\n/g, '\n')];
           } else if (typeof value === 'object') {
             return [key, decodeNewlines(value)];
           } else {
@@ -186,3 +186,4 @@ function decodeNewlines(obj) {
   }
   return obj;
 }
+
